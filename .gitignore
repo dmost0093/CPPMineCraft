@@ -36,3 +36,10 @@
 *.opendb
 *.vsidx
 *.ipch
+.vs/CPPMinecraft/v17/.suo
+*.recipe
+*.ilk
+*.log
+*.pdb
+*.idb
+*.tlog
