@@ -3,48 +3,41 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "graphics/Camera.h"
 #include "graphics/IndexBuffer.h"
 #include "graphics/Shader.h"
 #include "graphics/VertexArray.h"
 #include "graphics/VertexBuffer.h"
 #include "graphics/VertexBufferElements.h"
+#include "graphics/Window.h"
+
+
+glm::mat4 GetTranslationMatrix(float tx, float ty, float tz)
+{
+	glm::mat4 T{ 1.0f, 0.0f, 0.0f, tx,
+				0.0f, 1.0f, 0.0f, ty,
+				0.0f, 0.0f, 1.0f, tz,
+				0.0f, 0.0f, 0.0f, 1.0f };
+	return T;
+}
+
+glm::mat4 GetWorldMatrix()
+{
+	glm::mat4 World{ 1.0f, 0.0f, 0.0f, 0.0f,
+					 0.0f, 1.0f, 0.0f, 0.0f,
+					 0.0f, 0.0f, 1.0f, 0.0f,
+					 0.0f, 0.0f, 0.0f, 1.0f };
+	return World;
+}
 
 int main(void)
 {
-	std::cout << "Hello World" << std::endl;
-
-	GLFWwindow* window;
-
-	/* Initialize the library */
-	if (!glfwInit())
-		return -1;
-
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-
-
-	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(1980, 1060, "640 x 480", NULL, NULL);
-	if (!window)
-	{
-		glfwTerminate();
-		return -1;
-	}
-
-	/* Make the window's context current */
-	glfwMakeContextCurrent(window);
-
-	/* glfwMakeContext() must be call after glewInit()*/
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "ERROR" << std::endl;
-	}
+	Window mainWindow{ 1980, 1080, "Hello" };
+	mainWindow.Initialize();
 
 	
 
-	std::cout << glGetString(GL_VERSION) << std::endl; // print the GL_VERSION of my platform
+	
 
 
 
@@ -78,37 +71,72 @@ int main(void)
 	VertexBuffer VBO;
 	IndexBuffer IBO;
 
-	/*Shader shader{ "res/shaders/Basic.shader" };
-	shader.Use();
-	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
-	shader.SetUniformVec4("u_Color", color);*/
-
-
 	VAO.Bind();
 	VBO.AddData(vertices, 24 * sizeof(float), false);
 	VertexBufferElements elements;
 	elements.Push<float>(3);
 	VAO.AddAttr(VBO, elements);
 	IBO.AddData(indice, 36 * sizeof(unsigned int), false);
+
+
+	Camera camera{ glm::vec3{0.0f, 0.0f, 5.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 5.0f, 0.5f };
+
+	// Projection matrix
+	float fovy = 3.14f / 3;
+	float aspect = (float)mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight();
+	float near = 1.0f;
+	float far = 100.f;
+	glm::mat4 proj = glm::perspective(fovy, aspect, near, far);
+	glm::mat4 world = GetWorldMatrix();
+
+	Shader shader{ "res/shaders/Basic.shader" };
+	shader.Use();
+	shader.SetUniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
+	shader.SetUniformMat4f("u_ProjMat", proj);
+	shader.SetUniformMat4f("u_ViewMat", camera.calculateViewMatrix());
+	shader.SetUniformMat4f("u_WorldMat", world);
+
+	VAO.Unbind();
+	VBO.UnBind();
+	IBO.UnBind();
+	shader.UnUse();
+
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
+	float deltaTime = 0.0f;
+	float lastTime = 0.0f;
 	
 
 	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window))
+	while (!mainWindow.GetShouldClose())
 	{
+		float now = glfwGetTime();
+		deltaTime = now - lastTime;
+		lastTime = now;
+
+		glfwPollEvents();
+
+		camera.KeyControl(mainWindow.GetKeys(), deltaTime);
+		camera.MouseControl(mainWindow.GetXChange(), mainWindow.GetYChange());
+
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		shader.Use();
+		shader.SetUniformMat4f("u_ViewMat", camera.calculateViewMatrix());
+
+		shader.Use();
+		VAO.Bind();
+		IBO.Bind();
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
 		/* Swap front and back buffers */
-		glfwSwapBuffers(window);
+		mainWindow.SwapBuffer();
 
-		/* Poll for and process events */
-		glfwPollEvents();
+		
 	}
 
 	glfwTerminate();

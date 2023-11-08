@@ -40,6 +40,6 @@ public:
 	bool* GetKeys() { return m_Keys; }
 	float GetXChange();
 	float GetYChange();
-	void CreateCallBack();
+	void CreateCallback();
 	void WindowLoop();
 };
