@@ -12,6 +12,6 @@ public:
 	VertexArray();
 	~VertexArray();
 	void Bind() const;
-	void Unbind() const;
+	void UnBind() const;
 	void AddAttr(const VertexBuffer& buffer, const VertexBufferElements& elements);
 };

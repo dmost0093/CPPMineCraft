@@ -3,6 +3,7 @@
 IndexBuffer::IndexBuffer()
 {
 	glGenBuffers(1, &m_BufferID);
+	m_Count = 0;
 }
 
 IndexBuffer::~IndexBuffer()
@@ -20,8 +21,9 @@ void IndexBuffer::UnBind() const
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void IndexBuffer::AddData(const unsigned int* data, unsigned int size, bool dynamic)
+void IndexBuffer::AddData(const unsigned int* data, unsigned int count, bool dynamic)
 {
 	Bind();
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	m_Count = count;
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Count * sizeof(unsigned int), data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 }
