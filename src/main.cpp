@@ -36,48 +36,6 @@ int main(void)
 	Window mainWindow{ 1980, 1080, "Hello" };
 	mainWindow.Initialize();
 
-	
-
-	
-
-
-	float min = -0.5f;
-	float max = 0.5;
-
-
-	float vertices[] = {
-		min, min, min, // 0
-		max, min, min, // 1
-		max, max, min, // 2
-		min, max, min, // 3
-
-		min, min, max, // 4
-		max, min, max, // 5
-		max, max, max, // 6
-		min, max, max  // 7
-
-	};
-
-	unsigned int indice[] = {
-		1, 0, 3, 1, 3, 2, // north (-z)
-		4, 5, 6, 4, 6, 7, // south (+z)
-		5, 1, 2, 5, 2, 6, // east (+x)
-		0, 4, 7, 0, 7, 3, // west (-x)
-		2, 3, 7, 2, 7, 6, // top (+y)
-		5, 4, 0, 5, 0, 1  // bottom (-y)
-	};
-
-	VertexArray VAO;
-	VertexBuffer VBO;
-	IndexBuffer IBO;
-
-	VAO.Bind();
-	VBO.AddData(vertices, 24 * sizeof(float), false);
-	VertexBufferElements elements;
-	elements.Push<float>(3);
-	VAO.AddAttr(VBO, elements);
-	IBO.AddData(indice, 36 , false);
-
 
 	Camera camera{ glm::vec3{0.0f, 0.0f, 5.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 5.0f, 0.5f };
 
@@ -92,13 +50,8 @@ int main(void)
 	glm::mat4 view = camera.calculateViewMatrix();
 	glm::mat4 mvp = proj * view * model;
 	Renderer renderer(&camera);
-	renderer.UseShader(ShaderType::BASIC);
-	Shader shader = *renderer.CurrentShader();
 	renderer.SetProjectionMat(proj);
-	
-	VAO.UnBind();
-	VBO.UnBind();
-	IBO.UnBind();
+
 
 	renderer.Prepare(RenderPass::PASS3D);
 
@@ -116,8 +69,6 @@ int main(void)
 		glm::mat4 temp = GetModelMatrix(x + increase * i, y, z);
 		cubePositions.push_back(temp);
 	}
-
-	
 
 	float r, g, b;
 	r = 1.0f;
@@ -167,13 +118,7 @@ int main(void)
 			model = cubePositions[i];
 
 			renderer.RenderAABB(model, false, color);
-
-			/*mvp = proj * view * model;
-			shader.Use();
-			shader.SetUniform4f("u_Color", r, g, b, 1.0f);
-			shader.SetUniformMat4f("u_MVP", mvp);*/
-			
-			renderer.Draw(VAO, IBO, shader);
+			//renderer.Draw(VAO, IBO, shader);
 			
 			
 		}
@@ -186,9 +131,7 @@ int main(void)
 
 		
 	}
-	VAO.UnBind();
-	VBO.UnBind();
-	IBO.UnBind();
+
 	glfwTerminate();
 	return 0;
 }
