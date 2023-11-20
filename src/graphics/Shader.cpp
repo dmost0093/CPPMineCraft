@@ -126,6 +126,12 @@ void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& matrix)
 		&matrix[0][0]); // Address of the first element in the matrix
 }
 
+void Shader::SetUniformVec4f(const std::string& name, const glm::vec4& vector)
+{
+	glUniform4f(GetUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
+}
+
+
 int Shader::GetUniformLocation(const std::string& name)
 {
 	if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())

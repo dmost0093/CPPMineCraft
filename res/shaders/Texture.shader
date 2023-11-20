@@ -3,7 +3,7 @@
 
 layout(location = 0) in vec3 position;
 
-uniform mat4 u_Projection, u_View, u_Model, u_MVP;
+uniform mat4 u_MVP;
 
 
 void main()
@@ -23,6 +23,6 @@ uniform vec4 u_Color;
 void main()
 {
     
-    frag_Color = u_Color;
+    frag_Color = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 };

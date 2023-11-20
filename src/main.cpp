@@ -91,20 +91,16 @@ int main(void)
 	glm::mat4 model1 = GetModelMatrix(2.0f, 0.0f, 0.0f);
 	glm::mat4 view = camera.calculateViewMatrix();
 	glm::mat4 mvp = proj * view * model;
-	Shader shader{ "res/shaders/Basic.shader" };
-	shader.Use();
-	shader.SetUniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
-	//shader.SetUniformMat4f("u_MVP", mvp);
-	/*shader.SetUniformMat4f("u_ProjMat", proj);
-	shader.SetUniformMat4f("u_ViewMat", camera.calculateViewMatrix());
-	shader.SetUniformMat4f("u_ModelMat", model);*/
-
+	Renderer renderer(&camera);
+	renderer.UseShader(ShaderType::BASIC);
+	Shader shader = *renderer.CurrentShader();
+	renderer.SetProjectionMat(proj);
+	
 	VAO.UnBind();
 	VBO.UnBind();
 	IBO.UnBind();
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	renderer.Prepare(RenderPass::PASS3D);
 
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
@@ -121,14 +117,14 @@ int main(void)
 		cubePositions.push_back(temp);
 	}
 
-	Renderer renderer;
+	
 
 	float r, g, b;
 	r = 1.0f;
 	g = 0.0f;
 	b = 0.0f;
 
-
+	
 	/* Loop until the user closes the window */
 	while (!mainWindow.GetShouldClose())
 	{
@@ -143,10 +139,11 @@ int main(void)
 
 		/* Render here */
 		renderer.Clear();
-
+		
 		view = camera.calculateViewMatrix();
 		for (int i = 0; i < cubePositions.size(); i++) 
 		{
+			
 			if (i % 3 == 0)
 			{
 				r = 1.0f;
@@ -165,19 +162,24 @@ int main(void)
 				g = 0.0f;
 				b = 1.0f;
 			}
+			glm::vec4 color = { r,g,b,1.0f };
 			bool colorChanged = false;
 			model = cubePositions[i];
-			mvp = proj * view * model;
+
+			renderer.RenderAABB(model, false, color);
+
+			/*mvp = proj * view * model;
 			shader.Use();
 			shader.SetUniform4f("u_Color", r, g, b, 1.0f);
-			shader.SetUniformMat4f("u_MVP", mvp);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			shader.SetUniformMat4f("u_MVP", mvp);*/
+			
 			renderer.Draw(VAO, IBO, shader);
 			
 			
 		}
 		
-
+		
+		renderer.RenderQuadColor(glm::vec2(1.0f, 1.0f), glm::vec4(1.0f, 0.5f, 0.8f, 1.0f), GetModelMatrix(0.0f, 4.0f, 0.0f));
 
 		/* Swap front and back buffers */
 		mainWindow.SwapBuffer();
